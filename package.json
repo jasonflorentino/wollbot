@@ -1,0 +1,29 @@
+{
+  "name": "wollbot",
+  "version": "0.0.0",
+  "type": "module",
+  "devDependencies": {
+    "eslint": "^8.25.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "ngrok": "^4.3.3",
+    "node-fetch": "^3.2.10",
+    "prettier": "^2.7.1",
+    "wrangler": "2.1.11"
+  },
+  "private": true,
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "wrangler dev src/server.js",
+    "publish": "wrangler publish",
+    "deploy": "npm run publish",
+    "putsecret": "wrangler secret put",
+    "lint": "eslint '**/*.js'",
+    "register": "node src/register.js",
+    "ngrok": "ngrok http 8787"
+  },
+  "dependencies": {
+    "discord-interactions": "^3.2.0",
+    "itty-router": "^2.6.6"
+  }
+}
