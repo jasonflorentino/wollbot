@@ -49,16 +49,10 @@ export const ROLL = {
   description: 'rolllll',
   options: [
     {
-      name: 'num_of_dice',
-      description: 'How many dice to roll',
-      type: CommandOptionTypeEnum.INTEGER,
+      name: 'params',
+      description: 'Roll parameters',
+      type: CommandOptionTypeEnum.STRING,
       required: true,
     },
-    {
-        name: 'num_of_sides',
-        description: 'How many sides the dice have',
-        type: CommandOptionTypeEnum.INTEGER,
-        required: true,
-      },
   ],
 };

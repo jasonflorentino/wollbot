@@ -33,6 +33,11 @@ async function registerGuildCommands() {
       'The DISCORD_TEST_GUILD_ID environment variable is required.'
     );
   }
+  if (!applicationId) {
+    throw new Error(
+      'The DISCORD_APPLICATION_ID environment variable is required.'
+    );
+  }
   const url = `https://discord.com/api/v10/applications/${applicationId}/guilds/${testGuildId}/commands`;
   const res = await registerCommands(url);
   const json = await res.json();
@@ -43,6 +48,7 @@ async function registerGuildCommands() {
     );
     if (!response.ok) {
       console.error(`Problem removing command ${cmd.id}`);
+      console.error(`Response: ${JSON.stringify(response, null, 2)}`);
     }
   });
 }

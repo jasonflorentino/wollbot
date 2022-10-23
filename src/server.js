@@ -1,3 +1,7 @@
+import { get } from 'lodash';
+
+import { handleRollInput } from './commands/roll';
+
 /**
  * Welcome to Cloudflare Workers! This is your first worker.
  *
@@ -49,7 +53,8 @@ router.get('/', (request, env) => {
  */
 router.post('/', async (request, env) => {
   const message = request.json ? await request.json() : '';
-  console.log('message.data', message.data);
+  const userNickname = get(message, 'member.nick');
+  console.log('request.json', JSON.stringify(message, null, 2));
   if (message.type === InteractionType.PING) {
     // The `PING` message is used during the initial webhook handshake, and is
     // required to configure the webhook in the developer portal.
@@ -73,40 +78,20 @@ router.post('/', async (request, env) => {
         });
       }
       case ROLL.name.toLowerCase(): {
-        console.log('handling roll request');
-        console.log('options', JSON.stringify(message.data.options));
-        const { options } = message.data;
-        const { value: numDice } = options.find(
-          (o) => o.name === 'num_of_dice'
-        );
-        const { value: numSides } = options.find(
-          (o) => o.name === 'num_of_sides'
-        );
-
-        let text = `Rolling x${numDice} d${numSides}... `;
-        let total = 0;
-
-        if (numDice <= 0) {
-          text = `Error: Expected \`num_of_dice\` to be > 0, got ${numDice}`;
-        } else if (numSides <= 0) {
-          text = `Error: Expected \`num_of_sides\` to be > 0, got ${numSides}`;
-        } else {
-          for (let n = 1; n <= numDice; n++) {
-            const roll = Math.floor(Math.random() * numSides) + 1;
-            text += `${roll}!... `;
-            total += roll;
-          }
-          text += `That's a total of \`${total}\`!`;
-        }
-
-        if (text.length >= 2000) {
-            text = `The text was too long for a single discord message, but the total I got from rolling ${numDice}d${numSides} was \`${total}\`!`
+        console.log('Handling roll request:', JSON.stringify(message.data.options, null, 2));
+        const inputText = get(message, 'data.options[0].value', null);
+        let responseText = `${userNickname} rolled: \`${inputText}\` \n`
+        try {
+            responseText += handleRollInput(inputText);
+        } catch (e) {
+            responseText += `Sorry, something went wrong when trying to process this roll.`
+            console.error(e);
         }
 
         return new JsonResponse({
           type: 4,
           data: {
-            content: text,
+            content: responseText,
           },
         });
       }
