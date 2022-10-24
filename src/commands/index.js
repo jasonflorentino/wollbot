@@ -46,7 +46,7 @@ export const INVITE_COMMAND = {
 
 export const ROLL = {
   name: 'roll',
-  description: 'rolllll',
+  description: 'Dice rolls. Enter "/roll help" for usage.',
   options: [
     {
       name: 'params',

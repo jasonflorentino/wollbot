@@ -16,18 +16,18 @@ Will's Rollbot
 
     USAGE   Performs rolls as defined by the input text.
     PARAMS  A string of space-separated arguments.
-    ------- -----------------------------------------------------------------
+    ------- ------------------------------------------------------------------
     ARGS    cursed - A cursed roll. Will ignore 'd' rolls if present.
             #d#    - A roll where the first # is the number of times and
                      the second # is the number of sides. Eg: 2d20
                      Will not work with a 'cursed' roll.
-            adv    - Plays the given roll a second time and takes the maximum.
-            dis    - Plays the given roll a second time and takes the minimum.
+            adv    - Plays the given rolls a second time and takes the maximum.
+            dis    - Plays the given rolls a second time and takes the minimum.
             -#     - A negative modifier. Eg: -3
             +#     - A positive modifier. Eg: +3
             help   - Shows this manual.
-    ------- -----------------------------------------------------------------
-    NOTES   The order of the arguments shouldn't matter.
+    ------- ------------------------------------------------------------------
+    NOTES   The order of the arguments doesn't matter.
             If multiple modifiers are present, only the first will be used.
             Will return an error if both 'adv' and 'dis' are provided.
     EXAMPLE /roll d20 -3

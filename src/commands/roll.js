@@ -3,31 +3,34 @@ import {
   identity,
   toLower,
   sample,
-  trim as _trim,
+  trim,
   isEmpty,
 } from 'lodash';
+
+// Constants
 
 const version = 'v1.0.0';
 const date = '2022-10-23'
 const CURSED = [0, 1, 1, 1, 2, 3];
-const cleanString = flow([_trim, toLower]);
+const cleanString = flow([trim, toLower]);
 const rollFormatRe = /^\d+d\d+$/;
 const singleShortRollFormatRe = /^d\d+$/;
 const modifierRe = /^[-\+].+$/;
 
-function randNum(n) {
-  return Math.floor(Math.random() * n) + 1;
-}
+// Main handler
 
 export function handleRollInput(input) {
+  // Globals
   let TEXT = '';
   let ERROR = '';
   let MOD = 0;
   let TOTAL = 0;
 
+  // Handle input
   const args = input.trim().split(/\s/).filter(identity).map(cleanString);
   console.log('args:', args);
 
+  // Parse args
   const hasCursed = args.find((str) => str === 'cursed');
   const rolls = args.filter(
     (str) => rollFormatRe.test(str) || singleShortRollFormatRe.test(str)
@@ -37,12 +40,14 @@ export function handleRollInput(input) {
   const modifier = args.find((str) => modifierRe.test(str));
   const help = args.find((str) => str === 'help' || str === 'man');
 
-  if (isAdv && isDis) {
-    ERROR = `Input Error: Can't have both 'adv' and 'dis'`;
-  }
-
   if (modifier) {
     MOD = Number(modifier);
+  }
+
+  // Validate inputs
+
+  if (isAdv && isDis) {
+    ERROR = `Input Error: Can't have both 'adv' and 'dis'`;
   }
 
   if (!hasCursed && isEmpty(rolls)) {
@@ -55,24 +60,27 @@ export function handleRollInput(input) {
     )}'.`;
   }
 
+  // Ignore errors and return early with
+  // help text, if present.
+
   if (help) {
     ERROR = `\`\`\`Will's Rollbot
 ==============
     
     USAGE   Performs rolls as defined by the input text.
     PARAMS  A string of space-separated arguments.
-    ------- -----------------------------------------------------------------
-    ARGS    cursed - A cursed roll. Will ignore 'd' rolls if present.
-            #d#    - A roll where the first # is the number of times and 
+    ------- ------------------------------------------------------------------
+    ARGS    cursed - A cursed roll. Will ignore 'd-rolls' if present.
+            #d#    - A roll where the first # is the number of times and
                      the second # is the number of sides. Eg: 2d20
-                     Will not work with a 'cursed' roll.
-            adv    - Plays the given roll a second time and takes the maximum.
-            dis    - Plays the given roll a second time and takes the minimum.
+                     Will not work with in 'cursed-rolls'.
+            adv    - Plays the given rolls a second time and takes the maximum.
+            dis    - Plays the given rolls a second time and takes the minimum.
             -#     - A negative modifier. Eg: -3
             +#     - A positive modifier. Eg: +3
             help   - Shows this manual.
-    ------- -----------------------------------------------------------------
-    NOTES   The order of the arguments shouldn't matter.
+    ------- ------------------------------------------------------------------
+    NOTES   The order of the arguments doesn't matter.
             If multiple modifiers are present, only the first will be used.
             Will return an error if both 'adv' and 'dis' are provided.
     EXAMPLE /roll d20 -3
@@ -87,6 +95,8 @@ export function handleRollInput(input) {
   if (ERROR) {
     return ERROR;
   }
+
+  // Do either cursed or d-rolls
 
   if (hasCursed) {
     TEXT += 'Rolling a CURSED d6... ';
@@ -128,10 +138,13 @@ export function handleRollInput(input) {
   }
 
   // Handle modifer
+
   if (modifier) {
     TOTAL += MOD;
     TEXT += `\nWith modifier: \`${TOTAL}\``;
   }
+
+  // Handle overflow text
 
   if (TEXT.length >= 2000) {
     TEXT = `There's too much text to fit into one message, but ${
@@ -174,4 +187,8 @@ function playRolls(rolls) {
     total,
     text,
   };
+}
+
+function randNum(n) {
+  return Math.floor(Math.random() * n) + 1;
 }

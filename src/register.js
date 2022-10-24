@@ -38,10 +38,11 @@ async function registerGuildCommands() {
       'The DISCORD_APPLICATION_ID environment variable is required.'
     );
   }
+  console.log('Registering guild commands');
   const url = `https://discord.com/api/v10/applications/${applicationId}/guilds/${testGuildId}/commands`;
   const res = await registerCommands(url);
   const json = await res.json();
-  console.log(json);
+  console.log('response:', json);
   json.forEach(async (cmd) => {
     const response = await fetch(
       `https://discord.com/api/v10/applications/${applicationId}/guilds/${testGuildId}/commands/${cmd.id}`
@@ -59,6 +60,7 @@ async function registerGuildCommands() {
  */
 // eslint-disable-next-line no-unused-vars
 async function registerGlobalCommands() {
+  console.log('Registering global commands');
   const url = `https://discord.com/api/v10/applications/${applicationId}/commands`;
   await registerCommands(url);
 }
@@ -83,5 +85,5 @@ async function registerCommands(url) {
   return response;
 }
 
-// (async () => await registerGlobalCommands())();
+// await registerGlobalCommands();
 await registerGuildCommands();
