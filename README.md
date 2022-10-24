@@ -38,7 +38,8 @@ Will's Rollbot
 
 ## Development
 
-- Run `register` first if there are new commands.
+- Run `register` first if there are new/edited command names.
 - Get a forwarding url with `npm run ngrok`
 - Run `npm run dev`
 - Save the ngrok url into the Bot application's INTERACTIONS ENDPOINT URL (in Settings)
+- When finished `npm run publish` to deploy changes.
