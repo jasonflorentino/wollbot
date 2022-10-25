@@ -9,8 +9,8 @@ import {
 
 // Constants
 
-const version = 'v1.0.0';
-const date = '2022-10-23'
+const version = 'v1.0.1';
+const date = '2022-10-24'
 const CURSED = [0, 1, 1, 1, 2, 3];
 const cleanString = flow([trim, toLower]);
 const rollFormatRe = /^\d+d\d+$/;
@@ -99,20 +99,20 @@ export function handleRollInput(input) {
   // Do either cursed or d-rolls
 
   if (hasCursed) {
-    TEXT += 'Rolling a CURSED d6... ';
+    TEXT += '\nRolling a CURSED d6... ';
     const randN = sample(CURSED);
     TEXT += `\`${randN}\`! `;
     // Roll requires Advantage or Disadvantage
     if (isAdv || isDis) {
-      TEXT += 'Rolling another CURSED d6... ';
+      TEXT += '\nRolling another CURSED d6...';
       const randN2 = sample(CURSED);
-      TEXT += `\`${randN2}!\` `;
+      TEXT += `\`${randN2}!\`\n`;
       if (isAdv) {
         TOTAL += Math.max(randN, randN2);
-        TEXT += `Advantage: \`${Math.max(randN, randN2)}\` `;
+        TEXT += `\nAdvantage: \`${Math.max(randN, randN2)}\` `;
       } else {
         TOTAL += Math.min(randN, randN2);
-        TEXT += `Disadvantage: \`${Math.min(randN, randN2)}\` `;
+        TEXT += `\nDisadvantage: \`${Math.min(randN, randN2)}\` `;
       }
       // No Adv or Dis -- include first roll in total;
     } else {
@@ -122,7 +122,7 @@ export function handleRollInput(input) {
     const { total, text } = playRolls(rolls);
     TEXT += text;
     if (isAdv || isDis) {
-      TEXT += '\n';
+      TEXT += '\nRolling again...'
       const { total: total2, text: text2 } = playRolls(rolls);
       TEXT += text2;
       if (isAdv) {
@@ -170,18 +170,18 @@ function playRolls(rolls) {
     times = Number(times);
     sides = Number(sides);
     for (let i = 0; i < times; i++) {
-      text += `Rolling a d${sides}...`;
+      text += `\nRolling a \`d${sides}\`...`;
       const result = randNum(sides);
       text += `\`${result}\`! `;
       rollTotal += result;
       total += result;
     }
     if (times > 1) {
-      text += `That's \`${rollTotal}\`! `;
+      text += `\nThat's \`${rollTotal}\`! `;
     }
   }
   if (rolls.length > 1) {
-    text += `All together that's \`${total}\`! `;
+    text += `\nAll together that's \`${total}\`!\n`;
   }
   return {
     total,
