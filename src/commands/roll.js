@@ -181,8 +181,9 @@ function playRolls(rolls) {
     }
   }
   if (rolls.length > 1) {
-    text += `\nAll together that's \`${total}\`!\n`;
+    text += `\nAll together that's \`${total}\`!`;
   }
+  text += '\n';
   return {
     total,
     text,
