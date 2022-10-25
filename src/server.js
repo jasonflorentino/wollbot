@@ -78,14 +78,17 @@ router.post('/', async (request, env) => {
         });
       }
       case ROLL.name.toLowerCase(): {
-        console.log('Handling roll request:', JSON.stringify(message.data.options, null, 2));
+        console.log(
+          'Handling roll request:',
+          JSON.stringify(message.data.options, null, 2)
+        );
         const inputText = get(message, 'data.options[0].value', null);
-        let responseText = `${userNickname} rolled: \`${inputText}\` \n`
+        let responseText = `${userNickname} rolled: \`${inputText}\` \n`;
         try {
-            responseText += handleRollInput(inputText);
+          responseText += handleRollInput(inputText);
         } catch (e) {
-            responseText += `Sorry, something went wrong when trying to process this roll.`
-            console.error(e);
+          responseText += `Sorry, something went wrong when trying to process this roll.`;
+          console.error(e);
         }
 
         return new JsonResponse({

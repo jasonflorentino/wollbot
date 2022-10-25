@@ -1,6 +1,19 @@
 # Wollbot
 
-My friend needed a dice roller for discord d&d
+My friend needed a dice roller for discord d&d.
+He's a pretty great friend, so I made him one.
+
+## Features
+
+- Rolling an any-sided die an arbitrary number of times
+- Combining multiple dice in one roll
+- Rolling a CURSED die
+- Advantage / Disadvantage
+- Modifiers
+
+![Screenshot of the bot's reply](./images/sample.jpg)
+
+## Notes
 
 Followed this setup:
 https://discord.com/developers/docs/tutorials/hosting-on-cloudflare-workers

@@ -1,17 +1,11 @@
-import {
-  flow,
-  identity,
-  toLower,
-  sample,
-  trim,
-  isEmpty,
-} from 'lodash';
+import { flow, identity, toLower, sample, trim, isEmpty, } from 'lodash';
 
 // Constants
 
-const version = 'v1.0.1';
-const date = '2022-10-24'
+const VERSION = 'v1.0.1';
+const DATE = '2022-10-24';
 const CURSED = [0, 1, 1, 1, 2, 3];
+
 const cleanString = flow([trim, toLower]);
 const rollFormatRe = /^\d+d\d+$/;
 const singleShortRollFormatRe = /^d\d+$/;
@@ -88,7 +82,7 @@ export function handleRollInput(input) {
             /roll +10 cursed
             /roll dis 2d27 -2 3d101
 
-    RELEASE ${version} (${date})
+    RELEASE ${VERSION} (${DATE})
     \`\`\``;
   }
 
@@ -122,7 +116,7 @@ export function handleRollInput(input) {
     const { total, text } = playRolls(rolls);
     TEXT += text;
     if (isAdv || isDis) {
-      TEXT += '\nRolling again...'
+      TEXT += '\nRolling again...';
       const { total: total2, text: text2 } = playRolls(rolls);
       TEXT += text2;
       if (isAdv) {
@@ -158,17 +152,19 @@ export function handleRollInput(input) {
 function playRolls(rolls) {
   let total = 0;
   let text = '';
+  // Handle multiple dice types as one roll
   for (const roll of rolls) {
     let rollTotal = 0;
     let [times, sides] = roll.split('d');
-    // There was no number preceding 'd'
-    // Assume this is a shorthand single roll
-    // eg. d20 vs. 1d20
     if (!times) {
+      // There was no number preceding 'd'
+      // Assume this is a shorthand single roll
+      // eg. d20 vs. 1d20
       times = 1;
     }
     times = Number(times);
     sides = Number(sides);
+    // Handle a single dice type
     for (let i = 0; i < times; i++) {
       text += `\nRolling a \`d${sides}\`...`;
       const result = randNum(sides);
@@ -176,10 +172,12 @@ function playRolls(rolls) {
       rollTotal += result;
       total += result;
     }
+    // Total for this dice type
     if (times > 1) {
       text += `\nThat's \`${rollTotal}\`! `;
     }
   }
+  // Sum up total for multiple dice types
   if (rolls.length > 1) {
     text += `\nAll together that's \`${total}\`!`;
   }
