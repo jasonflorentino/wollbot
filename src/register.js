@@ -1,5 +1,7 @@
-import { AWW_COMMAND, INVITE_COMMAND, ROLL } from './commands/index.js';
 import fetch from 'node-fetch';
+import { map, pick } from 'lodash';
+
+import { AWW, INVITE, ROLL } from './commands/index.js';
 
 /**
  * This file is meant to be run from the command line, and is not used by the
@@ -66,13 +68,16 @@ async function registerGlobalCommands() {
 }
 
 async function registerCommands(url) {
+  const commandData = map([AWW, ROLL, INVITE], (cmd) =>
+    pick(cmd, ['name', 'description', 'options'])
+  );
   const response = await fetch(url, {
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bot ${token}`,
     },
     method: 'PUT',
-    body: JSON.stringify([AWW_COMMAND, ROLL, INVITE_COMMAND]),
+    body: JSON.stringify(commandData),
   });
 
   if (response.ok) {

@@ -1,15 +1,45 @@
-import { flow, identity, toLower, sample, trim, isEmpty, } from 'lodash';
+import { flow, identity, toLower, sample, trim, isEmpty, get } from 'lodash';
+
+import { JsonResponse } from '../lib/JsonResponse';
+import { CommandOptionTypeEnum } from '../lib/constants';
+import { randNum, logError } from '../lib/utils';
 
 // Constants
 
 const VERSION = 'v1.0.1';
 const DATE = '2022-10-24';
 const CURSED = [0, 1, 1, 1, 2, 3];
+const HELP_TEXT = `\`\`\`Will's Rollbot
+==============
+    
+    USAGE   Performs rolls as defined by the input text.
+    PARAMS  A string of space-separated arguments.
+    ------- ------------------------------------------------------------------
+    ARGS    cursed - A cursed roll. Will ignore 'd-rolls' if present.
+            #d#    - A roll where the first # is the number of times and
+                     the second # is the number of sides. Eg: 2d20
+                     Will not work with in 'cursed-rolls'.
+            adv    - Plays the given rolls a second time and takes the maximum.
+            dis    - Plays the given rolls a second time and takes the minimum.
+            -#     - A negative modifier. Eg: -3
+            +#     - A positive modifier. Eg: +3
+            help   - Shows this manual.
+    ------- ------------------------------------------------------------------
+    NOTES   The order of the arguments doesn't matter.
+            If multiple modifiers are present, only the first will be used.
+            Will return an error if both 'adv' and 'dis' are provided.
+    EXAMPLE /roll d20 -3
+            /roll 2d10 adv +4
+            /roll +10 cursed
+            /roll dis 2d27 -2 3d101
+
+    RELEASE ${VERSION} (${DATE})
+\`\`\``;
 
 const cleanString = flow([trim, toLower]);
 const rollFormatRe = /^\d+d\d+$/;
 const singleShortRollFormatRe = /^d\d+$/;
-const modifierRe = /^[-\+].+$/;
+const modifierRe = /^[-+].+$/;
 
 // Main handler
 
@@ -22,7 +52,6 @@ export function handleRollInput(input) {
 
   // Handle input
   const args = input.trim().split(/\s/).filter(identity).map(cleanString);
-  console.log('args:', args);
 
   // Parse args
   const hasCursed = args.find((str) => str === 'cursed');
@@ -58,32 +87,7 @@ export function handleRollInput(input) {
   // help text, if present.
 
   if (help) {
-    ERROR = `\`\`\`Will's Rollbot
-==============
-    
-    USAGE   Performs rolls as defined by the input text.
-    PARAMS  A string of space-separated arguments.
-    ------- ------------------------------------------------------------------
-    ARGS    cursed - A cursed roll. Will ignore 'd-rolls' if present.
-            #d#    - A roll where the first # is the number of times and
-                     the second # is the number of sides. Eg: 2d20
-                     Will not work with in 'cursed-rolls'.
-            adv    - Plays the given rolls a second time and takes the maximum.
-            dis    - Plays the given rolls a second time and takes the minimum.
-            -#     - A negative modifier. Eg: -3
-            +#     - A positive modifier. Eg: +3
-            help   - Shows this manual.
-    ------- ------------------------------------------------------------------
-    NOTES   The order of the arguments doesn't matter.
-            If multiple modifiers are present, only the first will be used.
-            Will return an error if both 'adv' and 'dis' are provided.
-    EXAMPLE /roll d20 -3
-            /roll 2d10 adv +4
-            /roll +10 cursed
-            /roll dis 2d27 -2 3d101
-
-    RELEASE ${VERSION} (${DATE})
-    \`\`\``;
+    ERROR = HELP_TEXT;
   }
 
   if (ERROR) {
@@ -188,6 +192,34 @@ function playRolls(rolls) {
   };
 }
 
-function randNum(n) {
-  return Math.floor(Math.random() * n) + 1;
+function handleRoll({ message }) {
+  const userNickname = get(message, 'member.nick');
+  const inputText = get(message, 'data.options[0].value', null);
+  let responseText = `${userNickname} rolled: \`${inputText}\` \n`;
+  try {
+    responseText += handleRollInput(inputText);
+  } catch (e) {
+    responseText += `Sorry, something went wrong when trying to process this roll.`;
+    logError(e);
+  }
+  return new JsonResponse({
+    type: 4,
+    data: {
+      content: responseText,
+    },
+  });
 }
+
+export default {
+  name: 'roll',
+  description: 'Dice rolls. Enter "/roll help" for usage.',
+  options: [
+    {
+      name: 'params',
+      description: 'Roll parameters',
+      type: CommandOptionTypeEnum.STRING,
+      required: true,
+    },
+  ],
+  handler: handleRoll,
+};
