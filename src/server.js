@@ -38,10 +38,10 @@ router.post('/', async (request, env) => {
   }
 
   // Handle command
-  const inputCommand = message.data.name.toLowerCase();
   try {
     // Most user commands will come as `APPLICATION_COMMAND`.
     if (message.type === InteractionType.APPLICATION_COMMAND) {
+      const inputCommand = message.data.name.toLowerCase();
       switch (inputCommand) {
         case AWW.name: {
           log('Handling Command:', inputCommand);

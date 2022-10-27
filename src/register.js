@@ -2,6 +2,7 @@ import fetch from 'node-fetch';
 import { map, pick } from 'lodash';
 
 import { AWW, INVITE, ROLL } from './commands/index.js';
+import { log, logError } from './lib/utils';
 
 /**
  * This file is meant to be run from the command line, and is not used by the
@@ -40,18 +41,18 @@ async function registerGuildCommands() {
       'The DISCORD_APPLICATION_ID environment variable is required.'
     );
   }
-  console.log('Registering guild commands');
+  log('Registering guild commands');
   const url = `https://discord.com/api/v10/applications/${applicationId}/guilds/${testGuildId}/commands`;
   const res = await registerCommands(url);
   const json = await res.json();
-  console.log('response:', json);
+  log('response:', json);
   json.forEach(async (cmd) => {
     const response = await fetch(
       `https://discord.com/api/v10/applications/${applicationId}/guilds/${testGuildId}/commands/${cmd.id}`
     );
     if (!response.ok) {
-      console.error(`Problem removing command ${cmd.id}`);
-      console.error(`Response: ${JSON.stringify(response, null, 2)}`);
+      logError(`Problem removing command ${cmd.id}`);
+      logError(`Response: ${JSON.stringify(response, null, 2)}`);
     }
   });
 }
@@ -62,7 +63,7 @@ async function registerGuildCommands() {
  */
 // eslint-disable-next-line no-unused-vars
 async function registerGlobalCommands() {
-  console.log('Registering global commands');
+  log('Registering global commands');
   const url = `https://discord.com/api/v10/applications/${applicationId}/commands`;
   await registerCommands(url);
 }
@@ -81,11 +82,11 @@ async function registerCommands(url) {
   });
 
   if (response.ok) {
-    console.log('Registered all commands');
+    log('Registered all commands');
   } else {
-    console.error('Error registering commands');
+    logError('Error registering commands');
     const text = await response.text();
-    console.error(text);
+    logError(text);
   }
   return response;
 }
