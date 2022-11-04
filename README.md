@@ -30,23 +30,26 @@ Will's Rollbot
     USAGE   Performs rolls as defined by the input text.
     PARAMS  A string of space-separated arguments.
     ------- ------------------------------------------------------------------
-    ARGS    cursed - A cursed roll. Will ignore 'd-rolls' if present.
-            #d#    - A roll where the first # is the number of times and
-                     the second # is the number of sides. Eg: 2d20
-                     Will not work with in 'cursed-rolls'.
-            adv    - Plays the given rolls a second time and takes the maximum.
-            dis    - Plays the given rolls a second time and takes the minimum.
-            -#     - A negative modifier. Eg: -3
-            +#     - A positive modifier. Eg: +3
-            help   - Shows this manual.
+    ARGS    cursed  - A cursed roll. Will ignore 'd-rolls' if present.
+            #d#     - A roll where the first # is the number of times and
+                      the second # is the number of sides. Eg: 2d20
+                      Will not work with in 'cursed-rolls'.
+            adv     - Plays the given rolls a second time and takes the maximum.
+            dis     - Plays the given rolls a second time and takes the minimum.
+            -#      - A negative modifier. Eg: -3
+            +#      - A positive modifier. Eg: +3
+            for:"x" - Give a title to the roll. Title must be in double quotes.
+            help    - Shows this manual.
     ------- ------------------------------------------------------------------
     NOTES   The order of the arguments doesn't matter.
             If multiple modifiers are present, only the first will be used.
             Will return an error if both 'adv' and 'dis' are provided.
+            Modifiers can also be appended to dice-types: 2d10+3
     EXAMPLE /roll d20 -3
             /roll 2d10 adv +4
             /roll +10 cursed
             /roll dis 2d27 -2 3d101
+            /roll 4d4+2 for:"Perception check" adv
 ```
 
 ## Development

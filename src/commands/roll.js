@@ -6,8 +6,8 @@ import { randNum, logError } from '../lib/utils';
 
 // Constants
 
-const VERSION = 'v1.0.1';
-const DATE = '2022-10-24';
+const VERSION = 'v1.0.2';
+const DATE = '2022-11-04';
 const CURSED = [0, 1, 1, 1, 2, 3];
 const HELP_TEXT = `\`\`\`Will's Rollbot
 ==============
@@ -15,23 +15,26 @@ const HELP_TEXT = `\`\`\`Will's Rollbot
     USAGE   Performs rolls as defined by the input text.
     PARAMS  A string of space-separated arguments.
     ------- ------------------------------------------------------------------
-    ARGS    cursed - A cursed roll. Will ignore 'd-rolls' if present.
-            #d#    - A roll where the first # is the number of times and
-                     the second # is the number of sides. Eg: 2d20
-                     Will not work with in 'cursed-rolls'.
-            adv    - Plays the given rolls a second time and takes the maximum.
-            dis    - Plays the given rolls a second time and takes the minimum.
-            -#     - A negative modifier. Eg: -3
-            +#     - A positive modifier. Eg: +3
-            help   - Shows this manual.
+    ARGS    cursed  - A cursed roll. Will ignore 'd-rolls' if present.
+            #d#     - A roll where the first # is the number of times and
+                      the second # is the number of sides. Eg: 2d20
+                      Will not work with in 'cursed-rolls'.
+            adv     - Plays the given rolls a second time and takes the maximum.
+            dis     - Plays the given rolls a second time and takes the minimum.
+            -#      - A negative modifier. Eg: -3
+            +#      - A positive modifier. Eg: +3
+            for:"x" - Give a title to the roll. Title must be in double quotes.
+            help    - Shows this manual.
     ------- ------------------------------------------------------------------
     NOTES   The order of the arguments doesn't matter.
             If multiple modifiers are present, only the first will be used.
             Will return an error if both 'adv' and 'dis' are provided.
+            Modifiers can also be appended to dice-types: 2d10+3
     EXAMPLE /roll d20 -3
             /roll 2d10 adv +4
             /roll +10 cursed
             /roll dis 2d27 -2 3d101
+            /roll 4d4+2 for:"Perception check" adv
 
     RELEASE ${VERSION} (${DATE})
 \`\`\``;
@@ -41,7 +44,7 @@ const cleanString = flow([trim, toLower]);
 // With or without modifier appended to end.
 const rollFormatRe = /^(\d+)?d\d+([-+]\d+)?$/;
 const modifierRe = /^[-+]\d+$/;
-const rollTitleRe = /^for\w*:".*"$/;
+const rollTitleRe = /for\w*:".*"/;
 
 const stringToArr = (str) =>
   str.trim().split(/\s/).filter(identity).map(cleanString);
@@ -97,7 +100,7 @@ export function handleRollInput(input) {
   }
 
   if (ERROR) {
-    return ERROR;
+    return [null, ERROR];
   }
 
   // Do either cursed or d-rolls
@@ -126,7 +129,7 @@ export function handleRollInput(input) {
     const { total, text } = playRolls(rolls);
     TEXT += text;
     if (isAdv || isDis) {
-      TEXT += '\nRolling again...';
+      TEXT += '\n**Rolling again...**';
       const { total: total2, text: text2 } = playRolls(rolls);
       TEXT += text2;
       if (isAdv) {
@@ -156,7 +159,7 @@ export function handleRollInput(input) {
     }the total ${modifier ? 'with modifier ' : ''}is \`${TOTAL}\``;
   }
 
-  return TEXT;
+  return [TEXT];
 }
 
 function playRolls(rolls) {
@@ -207,6 +210,7 @@ function playRolls(rolls) {
     // Add mod for roll
     if (mod) {
       rollTotal += mod;
+      total += mod;
       text += `\nWith modifier that's \`${rollTotal}\`! `;
     }
   }
@@ -223,18 +227,36 @@ function playRolls(rolls) {
 
 function handleRoll({ message }) {
   const userNickname = get(message, 'member.nick');
-  const inputText = get(message, 'data.options[0].value', null);
-  const args = stringToArr(inputText);
+  let inputText = get(message, 'data.options[0].value', null);
+  let cleanInput;
 
-  // TODO: don't split the rollTitle!
-  // Maybe handle it separately here before parsing the rest of the input.
-  const rollTitle = args.find((str) => rollTitleRe.test(str));
-  console.log(rollTitle);
-  let responseText = `${userNickname} rolled${
-    rollTitle ? ` "${rollTitle}"` : ''
-  }: \`${inputText}\``;
+  const rollMatch = inputText.match(rollTitleRe);
+  // eslint-disable-next-line no-unused-vars
+  let [_rollTitlePrefix, rollTitle, ...accidentals] = get(
+    rollMatch,
+    '0',
+    ''
+  ).split(':');
+  if (rollTitle) {
+    if (accidentals.length) {
+      // Join back strings that had ":" in the title
+      rollTitle = [rollTitle, accidentals].join(':');
+    }
+    // Remove double quotes
+    rollTitle = rollTitle.slice(1, rollTitle.length - 1);
+    cleanInput = inputText.replace(rollTitleRe, '');
+  }
+
+  let responseText = `**${userNickname} rolled${
+    rollTitle ? ` *${rollTitle}* ` : ''
+  }:** \`${cleanInput || inputText}\``;
   try {
-    responseText += handleRollInput(args);
+    const [result, error] = handleRollInput(cleanInput || inputText);
+    if (error) {
+      responseText = `${userNickname} rolled: \`${inputText}\`\n` + error;
+    } else {
+      responseText += result;
+    }
   } catch (e) {
     responseText += `Sorry, something went wrong when trying to process this roll.`;
     logError(e);
