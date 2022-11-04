@@ -37,9 +37,14 @@ const HELP_TEXT = `\`\`\`Will's Rollbot
 \`\`\``;
 
 const cleanString = flow([trim, toLower]);
-const rollFormatRe = /^\d+d\d+$/;
-const singleShortRollFormatRe = /^d\d+$/;
-const modifierRe = /^[-+].+$/;
+// With or without leading number for die count.
+// With or without modifier appended to end.
+const rollFormatRe = /^(\d+)?d\d+([-+]\d+)?$/;
+const modifierRe = /^[-+]\d+$/;
+const rollTitleRe = /^for\w*:".*"$/;
+
+const stringToArr = (str) =>
+  str.trim().split(/\s/).filter(identity).map(cleanString);
 
 // Main handler
 
@@ -51,13 +56,14 @@ export function handleRollInput(input) {
   let TOTAL = 0;
 
   // Handle input
-  const args = input.trim().split(/\s/).filter(identity).map(cleanString);
+  let args = input;
+  if (typeof input === 'string') {
+    args = stringToArr(input);
+  }
 
   // Parse args
   const hasCursed = args.find((str) => str === 'cursed');
-  const rolls = args.filter(
-    (str) => rollFormatRe.test(str) || singleShortRollFormatRe.test(str)
-  );
+  const rolls = args.filter((str) => rollFormatRe.test(str));
   const isAdv = args.find((str) => str === 'adv' || str === 'advantage');
   const isDis = args.find((str) => str === 'dis' || str === 'disadvantage');
   const modifier = args.find((str) => modifierRe.test(str));
@@ -104,7 +110,7 @@ export function handleRollInput(input) {
     if (isAdv || isDis) {
       TEXT += '\nRolling another CURSED d6...';
       const randN2 = sample(CURSED);
-      TEXT += `\`${randN2}!\`\n`;
+      TEXT += `\`${randN2}!\``;
       if (isAdv) {
         TOTAL += Math.max(randN, randN2);
         TEXT += `\nAdvantage: \`${Math.max(randN, randN2)}\` `;
@@ -154,13 +160,29 @@ export function handleRollInput(input) {
 }
 
 function playRolls(rolls) {
+  const hasModRe = /[-+]\d+/;
   let total = 0;
   let text = '';
   // Handle multiple dice types as one roll
-  for (const roll of rolls) {
+  for (let roll of rolls) {
+    // Parse roll modifier
+    let mod;
+    if (hasModRe.test(roll)) {
+      const minusIdx = roll.indexOf('-');
+      const plusIdx = roll.indexOf('+');
+      const modIdx =
+        minusIdx !== -1 ? minusIdx : plusIdx !== -1 ? plusIdx : roll.length;
+      // mod will be '' (coerced to 0) if for some reason both Idxs are -1
+      mod = Number(roll.substring(modIdx));
+      if (mod) {
+        // Strip modifier from roll string
+        roll = roll.slice(0, modIdx);
+      }
+    }
+
     let rollTotal = 0;
     let [times, sides] = roll.split('d');
-    if (!times) {
+    if (times === '') {
       // There was no number preceding 'd'
       // Assume this is a shorthand single roll
       // eg. d20 vs. 1d20
@@ -168,6 +190,7 @@ function playRolls(rolls) {
     }
     times = Number(times);
     sides = Number(sides);
+
     // Handle a single dice type
     for (let i = 0; i < times; i++) {
       text += `\nRolling a \`d${sides}\`...`;
@@ -180,12 +203,18 @@ function playRolls(rolls) {
     if (times > 1) {
       text += `\nThat's \`${rollTotal}\`! `;
     }
+
+    // Add mod for roll
+    if (mod) {
+      rollTotal += mod;
+      text += `\nWith modifier that's \`${rollTotal}\`! `;
+    }
   }
   // Sum up total for multiple dice types
   if (rolls.length > 1) {
-    text += `\nAll together that's \`${total}\`!`;
+    text += `\nAll together that's \`${total}\`! `;
   }
-  text += '\n';
+
   return {
     total,
     text,
@@ -195,9 +224,17 @@ function playRolls(rolls) {
 function handleRoll({ message }) {
   const userNickname = get(message, 'member.nick');
   const inputText = get(message, 'data.options[0].value', null);
-  let responseText = `${userNickname} rolled: \`${inputText}\` \n`;
+  const args = stringToArr(inputText);
+
+  // TODO: don't split the rollTitle!
+  // Maybe handle it separately here before parsing the rest of the input.
+  const rollTitle = args.find((str) => rollTitleRe.test(str));
+  console.log(rollTitle);
+  let responseText = `${userNickname} rolled${
+    rollTitle ? ` "${rollTitle}"` : ''
+  }: \`${inputText}\``;
   try {
-    responseText += handleRollInput(inputText);
+    responseText += handleRollInput(args);
   } catch (e) {
     responseText += `Sorry, something went wrong when trying to process this roll.`;
     logError(e);
