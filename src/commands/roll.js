@@ -29,7 +29,7 @@ const HELP_TEXT = `\`\`\`Will's Rollbot
     NOTES   The order of the arguments doesn't matter.
             If multiple modifiers are present, only the first will be used.
             Will return an error if both 'adv' and 'dis' are provided.
-            Modifiers can also be appended to dice-types: 2d10+3
+            Modifiers can also be appended to d-rolls: 2d10+3
     EXAMPLE /roll d20 -3
             /roll 2d10 adv +4
             /roll +10 cursed

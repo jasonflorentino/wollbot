@@ -23,5 +23,5 @@ export default {
 export { default as CMD_NAME } from './myCmd.js';
 ```
 
-- Handle it in `server.js`
+- Handle it by adding a case in `server.js`
 - Make sure it gets registered with `register.js`
