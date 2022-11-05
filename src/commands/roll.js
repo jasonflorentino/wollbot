@@ -44,7 +44,7 @@ const cleanString = flow([trim, toLower]);
 // With or without modifier appended to end.
 const rollFormatRe = /^(\d+)?d\d+([-+]\d+)?$/;
 const modifierRe = /^[-+]\d+$/;
-const rollTitleRe = /for\w*:".*"/;
+const rollTitleRe = /for\w*:"[^:]+"/g;
 
 const stringToArr = (str) =>
   str.trim().split(/\s/).filter(identity).map(cleanString);
@@ -57,6 +57,7 @@ export function handleRollInput(input) {
   let ERROR = '';
   let MOD = 0;
   let TOTAL = 0;
+  let ADV_DIS = 0;
 
   // Handle input
   let args = input;
@@ -115,11 +116,9 @@ export function handleRollInput(input) {
       const randN2 = sample(CURSED);
       TEXT += `\`${randN2}!\``;
       if (isAdv) {
-        TOTAL += Math.max(randN, randN2);
-        TEXT += `\nAdvantage: \`${Math.max(randN, randN2)}\` `;
+        ADV_DIS += Math.max(randN, randN2);
       } else {
-        TOTAL += Math.min(randN, randN2);
-        TEXT += `\nDisadvantage: \`${Math.min(randN, randN2)}\` `;
+        ADV_DIS += Math.min(randN, randN2);
       }
       // No Adv or Dis -- include first roll in total;
     } else {
@@ -133,22 +132,33 @@ export function handleRollInput(input) {
       const { total: total2, text: text2 } = playRolls(rolls);
       TEXT += text2;
       if (isAdv) {
-        TOTAL += Math.max(total, total2);
-        TEXT += `\nAdvantage: \`${Math.max(total, total2)}\` `;
+        ADV_DIS = Math.max(total, total2);
       } else {
-        TOTAL += Math.min(total, total2);
-        TEXT += `\nDisadvantage: \`${Math.min(total, total2)}\` `;
+        ADV_DIS = Math.min(total, total2);
       }
     } else {
       TOTAL += total;
     }
   }
 
-  // Handle modifer
+  // Handle Adv or Dis
+
+  if (ADV_DIS) {
+    TOTAL += ADV_DIS;
+    if (isAdv) {
+      TEXT += `\nAdvantage: \`${ADV_DIS}\``;
+    } else {
+      TEXT += `\nDisadvantage: \`${ADV_DIS}\``;
+    }
+  }
+
+  // Add modifer
 
   if (modifier) {
     TOTAL += MOD;
-    TEXT += `\nWith modifier: \`${TOTAL}\``;
+    TEXT += `\n**Final result with modifier: \`${TOTAL}\`**`;
+  } else {
+    TEXT += `\n**Final result: \`${TOTAL}\`**`;
   }
 
   // Handle overflow text
@@ -230,26 +240,19 @@ function handleRoll({ message }) {
   let inputText = get(message, 'data.options[0].value', null);
   let cleanInput;
 
-  const rollMatch = inputText.match(rollTitleRe);
+  const titleMatches = inputText.match(rollTitleRe);
   // eslint-disable-next-line no-unused-vars
-  let [_rollTitlePrefix, rollTitle, ...accidentals] = get(
-    rollMatch,
-    '0',
-    ''
-  ).split(':');
+  let [_rollTitlePrefix, rollTitle] = get(titleMatches, '0', '').split(':');
   if (rollTitle) {
-    if (accidentals.length) {
-      // Join back strings that had ":" in the title
-      rollTitle = [rollTitle, accidentals].join(':');
-    }
     // Remove double quotes
     rollTitle = rollTitle.slice(1, rollTitle.length - 1);
-    cleanInput = inputText.replace(rollTitleRe, '');
+    cleanInput = inputText.replace(rollTitleRe, '').trim();
   }
 
   let responseText = `**${userNickname} rolled${
     rollTitle ? ` *${rollTitle}* ` : ''
   }:** \`${cleanInput || inputText}\``;
+
   try {
     const [result, error] = handleRollInput(cleanInput || inputText);
     if (error) {
