@@ -1,6 +1,6 @@
 # Wollbot
 
-My friend needed a dice roller for discord d&d.
+My friend needed a dice roller for discord d&d.  
 He's a pretty great friend, so I made him one.
 
 ## Features
@@ -10,10 +10,13 @@ He's a pretty great friend, so I made him one.
 - Rolling a CURSED die
 - Advantage / Disadvantage
 - Modifiers
+- "Titling" a roll so you know what it was for.
 
 ![Screenshot of the bot's reply](./images/sample.jpg)
 
 ## Notes
+
+Built for deployment on [Cloudflare Workers](https://workers.cloudflare.com/)
 
 Followed this setup:
 https://discord.com/developers/docs/tutorials/hosting-on-cloudflare-workers
@@ -58,4 +61,5 @@ Will's Rollbot
 - Get a forwarding url with `npm run ngrok`
 - Run `npm run dev`
 - Save the ngrok url into the Bot application's INTERACTIONS ENDPOINT URL (in Settings)
-- When finished `npm run publish` to deploy changes.
+- When finished `npm run publish` to deploy changes to Cloudflare.
+- Don't forget to change the Bot's INTERACTIONS ENDPOINT URL back workers URL.
