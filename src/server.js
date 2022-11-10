@@ -8,7 +8,7 @@ import { pick } from 'lodash';
 
 import { JsonResponse } from './lib/JsonResponse';
 import { format, log, logError, messageKeys } from './lib/utils';
-import { AWW, INVITE, ROLL } from './commands';
+import { AWW, INVITE, ROLL, JAIL } from './commands';
 
 const router = Router();
 
@@ -54,6 +54,10 @@ router.post('/', async (request, env) => {
         case INVITE.name: {
           log('Handling Command:', inputCommand);
           return INVITE.handler({ request, env, message });
+        }
+        case JAIL.name: {
+          log('Handling Command:', inputCommand);
+          return JAIL.handler({ request, env, message });
         }
         default:
           logError('Unknown Command:', inputCommand);
