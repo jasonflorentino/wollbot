@@ -64,7 +64,7 @@ Will's Rollbot
 - When finished `npm run publish` to deploy changes to Cloudflare.
 - Don't forget to change the Bot's INTERACTIONS ENDPOINT URL back workers URL.
 
-## Todo: Fix `register`
+### Todo: Fix `register`
 
 Currently `npm run register` fails due to some esm/node import issues...  
 Kinda janky but, to workaround:
