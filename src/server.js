@@ -89,6 +89,7 @@ router.post('/', async (request, env) => {
 router.all('*', () => new Response('Not Found.', { status: 404 }));
 
 export default {
+  // eslint-disable-next-line no-unused-vars
   async fetch(request, env, ctx) {
     if (request.method === 'POST') {
       // Using the incoming headers, verify this request actually came from discord.
