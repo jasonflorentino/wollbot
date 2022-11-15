@@ -63,3 +63,30 @@ Will's Rollbot
 - Save the ngrok url into the Bot application's INTERACTIONS ENDPOINT URL (in Settings)
 - When finished `npm run publish` to deploy changes to Cloudflare.
 - Don't forget to change the Bot's INTERACTIONS ENDPOINT URL back workers URL.
+
+## Todo: Fix `register`
+
+Currently `npm run register` fails due to some esm/node import issues...  
+Kinda janky but, to workaround:
+
+- Add file extension `.js` to all local imports
+  ```diff
+  - import { randNum, logError } from '../lib/utils';
+  + import { randNum, logError } from '../lib/utils.js';
+  ```
+- Import `Response` as a named import where it is used
+
+  ```diff
+  // JsonResponse.js
+  + import { Response } from 'node-fetch'
+  class JsonResponse extends Response {
+        ...
+  }
+  ```
+
+- Convert `lodash` imports to destructure fns from a default import
+  ```diff
+  - import { get } from 'lodash'
+  + import l from 'lodash'
+  + const { get } = l;
+  ```
