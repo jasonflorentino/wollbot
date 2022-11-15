@@ -8,7 +8,7 @@ import { pick } from 'lodash';
 
 import { JsonResponse } from './lib/JsonResponse';
 import { format, log, logError, messageKeys } from './lib/utils';
-import { AWW, INVITE, ROLL } from './commands';
+import { AWW, INVITE, ROLL, JAIL } from './commands';
 
 const router = Router();
 
@@ -55,6 +55,10 @@ router.post('/', async (request, env) => {
           log('Handling Command:', inputCommand);
           return INVITE.handler({ request, env, message });
         }
+        case JAIL.name: {
+          log('Handling Command:', inputCommand);
+          return JAIL.handler({ request, env, message });
+        }
         default:
           logError('Unknown Command:', inputCommand);
           return new JsonResponse({ error: 'Unknown Type' }, { status: 400 });
@@ -85,6 +89,7 @@ router.post('/', async (request, env) => {
 router.all('*', () => new Response('Not Found.', { status: 404 }));
 
 export default {
+  // eslint-disable-next-line no-unused-vars
   async fetch(request, env, ctx) {
     if (request.method === 'POST') {
       // Using the incoming headers, verify this request actually came from discord.

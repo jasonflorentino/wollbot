@@ -1,7 +1,7 @@
 import fetch from 'node-fetch';
 import { map, pick } from 'lodash';
 
-import { AWW, INVITE, ROLL } from './commands/index.js';
+import { AWW, INVITE, ROLL, JAIL } from './commands/index';
 import { log, logError } from './lib/utils';
 
 /**
@@ -69,7 +69,7 @@ async function registerGlobalCommands() {
 }
 
 async function registerCommands(url) {
-  const commandData = map([AWW, ROLL, INVITE], (cmd) =>
+  const commandData = map([AWW, ROLL, INVITE, JAIL], (cmd) =>
     pick(cmd, ['name', 'description', 'options'])
   );
   const response = await fetch(url, {
@@ -91,5 +91,5 @@ async function registerCommands(url) {
   return response;
 }
 
-// await registerGlobalCommands();
-await registerGuildCommands();
+await registerGlobalCommands();
+// await registerGuildCommands();
