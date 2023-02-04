@@ -59,10 +59,12 @@ Will's Rollbot
 
 - Run `register` first if there are new/edited command names.
 - Get a forwarding url with `npm run ngrok`
+  - IIRC there's some account setup involved if you've never used ngrok before?
 - Run `npm run dev`
 - Save the ngrok url into the Bot application's INTERACTIONS ENDPOINT URL (in Settings)
+- Make your changes.
 - When finished `npm run publish` to deploy changes to Cloudflare.
-- Don't forget to change the Bot's INTERACTIONS ENDPOINT URL back workers URL.
+- Don't forget to change the Bot's INTERACTIONS ENDPOINT URL back to the workers URL.
 
 ### Todo: Fix `register`
 
